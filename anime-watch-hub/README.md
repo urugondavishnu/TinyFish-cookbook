@@ -2,7 +2,7 @@
 
 
 
-\*\*Live:\*\* \[https://anime-watch-hub.vercel.app](https://anime-watch-hub.vercel.app)
+\*\*Live:\*\* \[https://v0-animefinder.vercel.app/](https://v0-animefinder.vercel.app/)
 
 
 
@@ -12,7 +12,9 @@ Anime Watch Hub helps users find exactly where a specific anime is available to 
 
 \## Demo
 
-https://github.com/user-attachments/assets/your-demo-gif-link-here
+https://github.com/user-attachments/assets/5425211a-43b9-40c1-b5f7-8451c7549931
+
+
 
 
 
