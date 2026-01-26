@@ -1,8 +1,8 @@
-\# Anime Watch Hub
+# Anime Watch Hub
 
 
 
-\*\*Live:\*\* \[https://v0-animefinder.vercel.app/](https://v0-animefinder.vercel.app/)
+**Live** : [https://v0-animefinder.vercel.app/](https://v0-animefinder.vercel.app/)
 
 
 
@@ -10,7 +10,7 @@ Anime Watch Hub helps users find exactly where a specific anime is available to 
 
 
 
-\## Demo
+## Demo
 
 https://github.com/user-attachments/assets/5425211a-43b9-40c1-b5f7-8451c7549931
 
@@ -18,7 +18,7 @@ https://github.com/user-attachments/assets/5425211a-43b9-40c1-b5f7-8451c7549931
 
 
 
-\## TinyFish API Usage
+## TinyFish API Usage
 
 
 
@@ -94,53 +94,53 @@ The app processes the SSE stream to show live browser status updates and provide
 
 
 
-\## How to Run
+## How to Run
 
-\*\*Prerequisites\*\*
+**Prerequisites**
 
-\- Node.js 18+
+- Node.js 18+
 
-\- A Gemini API Key
+- A Gemini API Key
 
-\- A TinyFish API Key (\[get one here](https://accounts.mino.ai/sign-in?redirect\_url=https%3A%2F%2Fmino.ai%2Fapi-keys))
-
-
-
-\*\*Setup\*\*
-
-1\. Install dependencies:
-
-&nbsp;  ```bash
-
-&nbsp;  cd anime-watch-hub
-
-&nbsp;   npm install
-
-&nbsp;  ```
-
-2\. Configure Environment: Create a ```.env.local``` file in the root directory:
-
-&nbsp;  ```bash
-
-&nbsp;  GEMINI\_API\_KEY=your\_gemini\_api\_key
-
-&nbsp;   MINO\_API\_KEY=your\_tinyfish\_api\_key
-
-&nbsp;  ```
-
-3\. Launch Development Server:
-
-&nbsp;  ```bash
-
-&nbsp;  npm run dev
-
-&nbsp;  ```
-
-4\. Access the App: Navigate to http://localhost:3000
+- A TinyFish API Key (\[get one here](https://accounts.mino.ai/sign-in?redirect\_url=https%3A%2F%2Fmino.ai%2Fapi-keys))
 
 
 
-\## Architecture Diagram
+**Setup** 
+
+1. Install dependencies:
+
+```bash
+
+  cd anime-watch-hub
+
+   npm install
+
+  ```
+
+2. Configure Environment: Create a ```.env.local``` file in the root directory:
+
+ ```bash
+
+  GEMINI\_API\_KEY=your\_gemini\_api\_key
+
+   MINO\_API\_KEY=your\_tinyfish\_api\_key
+
+  ```
+
+3. Launch Development Server:
+
+```bash
+
+  npm run dev
+
+  ```
+
+4. Access the App: Navigate to http://localhost:3000
+
+
+
+## Architecture Diagram
 
 
 
