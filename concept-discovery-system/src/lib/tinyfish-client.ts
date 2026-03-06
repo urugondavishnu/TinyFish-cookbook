@@ -1,38 +1,38 @@
-import { MINO_API_URL } from './constants';
-import type { MinoRequestConfig, MinoCallbacks, MinoSSEEvent } from '@/types';
+import { TINYFISH_API_URL } from './constants';
+import type { TinyFishRequestConfig, TinyFishCallbacks, TinyFishSSEEvent } from '@/types';
 
 /**
  * Parse a single SSE line
  */
-function parseSSELine(line: string): MinoSSEEvent | null {
+function parseSSELine(line: string): TinyFishSSEEvent | null {
   if (!line.startsWith('data: ')) return null;
 
   try {
-    return JSON.parse(line.slice(6)) as MinoSSEEvent;
+    return JSON.parse(line.slice(6)) as TinyFishSSEEvent;
   } catch {
     return null;
   }
 }
 
 /**
- * Start a Mino agent and handle SSE stream
+ * Start a TinyFish agent and handle SSE stream
  * Returns an AbortController for cancellation
  */
-export function startMinoAgent(
-  config: MinoRequestConfig,
-  callbacks: MinoCallbacks
+export function startTinyFishAgent(
+  config: TinyFishRequestConfig,
+  callbacks: TinyFishCallbacks
 ): AbortController {
   const controller = new AbortController();
-  const apiKey = import.meta.env.VITE_MINO_API_KEY;
+  const apiKey = import.meta.env.VITE_TINYFISH_API_KEY;
 
   // Check API key
   if (!apiKey) {
-    callbacks.onError('Mino API key is not configured. Add it to your .env file.');
+    callbacks.onError('TinyFish API key is not configured. Add it to your .env file.');
     return controller;
   }
 
   // Start the fetch request
-  fetch(MINO_API_URL, {
+  fetch(TINYFISH_API_URL, {
     method: 'POST',
     headers: {
       'X-API-Key': apiKey,

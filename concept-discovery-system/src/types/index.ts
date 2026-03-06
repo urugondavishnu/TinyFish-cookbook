@@ -122,8 +122,8 @@ export type AppAction =
   | { type: 'ADD_LOG'; payload: LogEntry }
   | { type: 'RESET' };
 
-// Mino SSE event types
-export interface MinoSSEEvent {
+// TinyFish SSE event types
+export interface TinyFishSSEEvent {
   type?: string;
   status?: string;
   message?: string;
@@ -135,15 +135,15 @@ export interface MinoSSEEvent {
   totalSteps?: number;
 }
 
-// Mino client types
-export interface MinoCallbacks {
-  onStep: (event: MinoSSEEvent) => void;
+// TinyFish client types
+export interface TinyFishCallbacks {
+  onStep: (event: TinyFishSSEEvent) => void;
   onStreamingUrl: (url: string) => void;
   onComplete: (result: ConceptData) => void;
   onError: (error: string) => void;
 }
 
-export interface MinoRequestConfig {
+export interface TinyFishRequestConfig {
   url: string;
   goal: string;
 }

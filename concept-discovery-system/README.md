@@ -17,7 +17,7 @@ The app calls the TinyFish SSE endpoint once per discovered URL, in parallel. Ea
 const response = await fetch("https://agent.tinyfish.ai/v1/automation/run-sse", {
   method: "POST",
   headers: {
-    "X-API-Key": import.meta.env.VITE_MINO_API_KEY,
+    "X-API-Key": import.meta.env.VITE_TINYFISH_API_KEY,
     "Content-Type": "application/json",
   },
   body: JSON.stringify({
@@ -62,13 +62,13 @@ npm install
 2. Create a `.env` file with your API keys:
 
 ```
-VITE_MINO_API_KEY=your_tinyfish_api_key_here
+VITE_TINYFISH_API_KEY=your_tinyfish_api_key_here
 VITE_OPENROUTER_API_KEY=your_openrouter_key_here
 VITE_GITHUB_TOKEN=your_github_token_here
 VITE_STACKEXCHANGE_KEY=your_stackexchange_key_here
 ```
 
-Only `VITE_MINO_API_KEY` is required. The others improve search quality and rate limits:
+Only `VITE_TINYFISH_API_KEY` is required. The others improve search quality and rate limits:
 - **OpenRouter API Key** — Enables AI-powered search query generation (falls back to deterministic extraction without it)
 - **GitHub Token** — Increases GitHub API rate limit from 60 to 5,000 requests/hour
 - **Stack Exchange Key** — Increases Stack Exchange API rate limit from 300 to 10,000 requests/day
@@ -134,6 +134,6 @@ npm run dev
 - **Styling**: Tailwind CSS v4 (custom dark cyberpunk theme)
 - **Animation**: Framer Motion
 - **State Management**: useReducer + Context API
-- **Browser Agents**: TinyFish/Mino API (SSE streaming)
+- **Browser Agents**: TinyFish API (SSE streaming)
 - **AI**: OpenRouter (Google Gemini 2.0 Flash) for query generation and idea analysis
 - **APIs**: GitHub REST API, Stack Exchange API, Dev.to website search

@@ -4,7 +4,7 @@ import { generateSearchQueries } from '@/lib/query-generator';
 import { generateSmartQueries } from '@/lib/openrouter-client';
 import { executeSearches } from '@/lib/search-engines';
 import { buildAgentGoal } from '@/lib/goal-builder';
-import { startMinoAgent } from '@/lib/mino-client';
+import { startTinyFishAgent } from '@/lib/tinyfish-client';
 import { generateAgentId } from '@/lib/utils';
 import type { ConceptData, LogEntry } from '@/types';
 
@@ -118,8 +118,8 @@ export function useConceptDiscovery() {
             // SO agents use a dummy URL — they reason about API data, not browse
             const agentUrl = result.platform === 'stackoverflow' ? 'https://example.com' : result.url;
 
-            // Start Mino agent with SSE stream
-            const controller = startMinoAgent(
+            // Start TinyFish agent with SSE stream
+            const controller = startTinyFishAgent(
               { url: agentUrl, goal },
               {
                 onStep: (event) => {

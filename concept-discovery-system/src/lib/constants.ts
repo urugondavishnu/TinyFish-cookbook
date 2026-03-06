@@ -1,5 +1,5 @@
 // API Endpoints
-export const MINO_API_URL = 'https://agent.tinyfish.ai/v1/automation/run-sse';
+export const TINYFISH_API_URL = 'https://agent.tinyfish.ai/v1/automation/run-sse';
 export const GITHUB_API_URL = 'https://api.github.com';
 export const STACKEXCHANGE_API_URL = 'https://api.stackexchange.com/2.3';
 export const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
