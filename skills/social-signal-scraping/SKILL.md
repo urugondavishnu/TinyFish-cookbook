@@ -33,28 +33,32 @@ If not authenticated, tell the user:
 
 ## Step 1: Parallel Platform Scraping
 
-Scrape all three platforms simultaneously. Each platform gets its own TinyFish call. Use `--sync` on every call. URL-encode the query.
+Launch all three TinyFish calls using `--async` so they run simultaneously. Each platform gets its own independent call. URL-encode the query.
 
 ### Reddit
 
 ```bash
-tinyfish agent run --sync --url "https://www.reddit.com/search/?q=<query>" \
-  "Extract relevant discussions about '<query>' as a JSON array. For each discussion, capture: [{\"platform\": \"reddit\", \"title\": \"post title\", \"content\": \"post body or summary\", \"upvotes\": \"number as string\", \"subreddit\": \"subreddit name\", \"url\": \"post url\", \"timestamp\": \"date if available\", \"sentiment\": \"positive|negative|neutral\"}]. Focus on: complaints, comparisons to competitors, feature requests, and substantive discussions. Ignore memes, low-effort posts, and irrelevant results. Return up to 30 results, prioritizing posts with the most engagement. Return ONLY the JSON array, no other text."
+tinyfish agent run --async --url "https://www.reddit.com/search/?q=<query>" \
+  "Extract relevant discussions about '<query>' as a JSON array. For each discussion, capture: [{\"platform\": \"reddit\", \"title\": \"post title\", \"content\": \"post body or summary\", \"upvotes\": \"number as string\", \"subreddit\": \"subreddit name\", \"url\": \"post url\", \"timestamp\": \"date if available\", \"sentiment\": \"positive|negative|neutral\"}]. Focus on: complaints, comparisons to competitors, feature requests, and substantive discussions. Ignore memes, low-effort posts, and irrelevant results. Return up to 10 results, prioritizing posts with the most engagement. Return ONLY the JSON array, no other text."
 ```
 
 ### Twitter/X
 
 ```bash
-tinyfish agent run --sync --url "https://twitter.com/search?q=<query>&src=typed_query" \
-  "Extract tweets about '<query>' as a JSON array. For each tweet, capture: [{\"platform\": \"twitter\", \"content\": \"tweet text\", \"author\": \"@handle\", \"likes\": \"number as string\", \"retweets\": \"number as string\", \"timestamp\": \"date if available\", \"sentiment\": \"positive|negative|neutral\"}]. Ignore spam, ads, bot-like content, and promotional tweets. Prefer tweets with meaningful opinions, complaints, praise, or comparisons. Return up to 30 results, prioritizing tweets with the most engagement. Return ONLY the JSON array, no other text."
+tinyfish agent run --async --url "https://nitter.net/search?f=tweets&q=<query>" \
+  "Extract tweets about '<query>' as a JSON array. For each tweet, capture: [{\"platform\": \"twitter\", \"content\": \"tweet text\", \"author\": \"@handle\", \"likes\": \"number as string\", \"retweets\": \"number as string\", \"timestamp\": \"date if available\", \"sentiment\": \"positive|negative|neutral\"}]. Ignore spam, ads, bot-like content, and promotional tweets. Prefer tweets with meaningful opinions, complaints, praise, or comparisons. Return up to 10 results, prioritizing tweets with the most engagement. Return ONLY the JSON array, no other text."
 ```
 
 ### Product Hunt
 
 ```bash
-tinyfish agent run --sync --url "https://www.producthunt.com/search?q=<query>" \
-  "Extract comments and discussions about '<query>' as a JSON array. For each entry, capture: [{\"platform\": \"producthunt\", \"product_name\": \"product name\", \"content\": \"comment or description text\", \"upvotes\": \"number as string\", \"url\": \"product or comment url\", \"timestamp\": \"date if available\", \"sentiment\": \"positive|negative|neutral\"}]. Focus on user reviews, maker responses, and substantive comments. Return up to 30 results. Return ONLY the JSON array, no other text."
+tinyfish agent run --async --url "https://www.google.com/search?q=site:producthunt.com+\"<query>\"+review" \
+  "Open the search results and select the most relevant Product Hunt result about '<query>'. After opening the Product Hunt page, click the Reviews tab. Scroll down multiple times to load user reviews. If pagination or a load more button exists, trigger it. Scroll at least 3–5 times before extracting. Extract only individual user review cards. Do NOT extract the hero section. Do NOT extract the rating summary. Do NOT navigate away from the page. Do NOT open plugins or unrelated products. Do NOT perform additional searches. Remain on the reviews section and scroll. Capture complaints, comparisons, and negative feedback. Return up to 10 reviews as JSON array: [{\"platform\": \"producthunt\", \"product_name\": \"product name\", \"content\": \"review text\", \"upvotes\": \"number as string\", \"timestamp\": \"date if available\", \"sentiment\": \"positive|negative|neutral\"}]. Return ONLY JSON."
 ```
+
+### Collect Results
+
+Capture the run_id returned from each async TinyFish call (reddit, twitter, producthunt). Wait until each run reaches COMPLETED status. Retrieve results using the corresponding run_id for each platform. Do not proceed until all completed runs are collected. If a run fails, mark that platform as failed and continue.
 
 ### Retry & Failure
 
@@ -170,8 +174,8 @@ Return ONLY this JSON structure. No markdown, no logs, no extra text.
 ## Key Rules
 
 - One TinyFish call per platform — never combine.
-- Always use `--sync`.
+- Always use `--async` and collect results via `tinyfish agent run get <run_id>`.
 - If a platform fails, return partial results from the others.
 - Return only valid JSON — no markdown, no logs.
-- Cap at 20–30 entries per platform.
+- Cap at 10 entries per platform.
 - Match the user's language.
