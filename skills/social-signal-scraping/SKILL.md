@@ -7,16 +7,18 @@ description: Scrape social signals (Reddit, Twitter/X, Product Hunt) about any c
 
 Extract discussions, opinions, and sentiment about any company, product, or topic from Reddit, Twitter/X, and Product Hunt. Returns unified structured JSON with aggregated insights.
 
-## Pre-flight Check (REQUIRED)
+---
 
-Before making any TinyFish call, always run BOTH checks:
+## Step 0: Pre-flight Check (REQUIRED)
+
+Run both checks before any TinyFish call. Do NOT proceed until both pass.
 
 **1. CLI installed?**
 ```bash
 which tinyfish && tinyfish --version || echo "TINYFISH_CLI_NOT_INSTALLED"
 ```
 
-If not installed, stop and tell the user:
+If missing, tell the user:
 > Install the TinyFish CLI: `npm install -g @tiny-fish/cli`
 
 **2. Authenticated?**
@@ -24,61 +26,14 @@ If not installed, stop and tell the user:
 tinyfish auth status
 ```
 
-If not authenticated, stop and tell the user:
-
-> You need a TinyFish API key. Get one at: https://agent.tinyfish.ai/api-keys
->
-> Then authenticate:
->
-> **Option 1 — CLI login (interactive):**
-> ```
-> tinyfish auth login
-> ```
->
-> **Option 2 — Environment variable (CI/CD):**
-> ```
-> export TINYFISH_API_KEY="your-key-here"
-> ```
->
-> **Option 3 — Settings file:** Add to your AI coding assistant's settings:
-> ```json
-> {
->   "env": {
->     "TINYFISH_API_KEY": "your-key-here"
->   }
-> }
-> ```
-
-Do NOT proceed until both checks pass.
+If not authenticated, tell the user:
+> Get an API key at https://agent.tinyfish.ai/api-keys, then run `tinyfish auth login` or set `TINYFISH_API_KEY` as an environment variable.
 
 ---
 
-## Input
+## Step 1: Parallel Platform Scraping
 
-The skill accepts a single input:
-
-```json
-{
-  "query": "string"   // company name, product, or topic
-}
-```
-
----
-
-## Execution Plan
-
-For a given query, execute these steps in order:
-
-1. **Scrape all three platforms in parallel** (separate TinyFish calls)
-2. **Parse and normalize** raw results into unified format
-3. **Classify sentiment** for each entry
-4. **Aggregate** into final structured output
-
----
-
-## Step 1: Platform Scraping
-
-Each platform MUST be scraped with its own TinyFish call. Run all three in parallel.
+Scrape all three platforms simultaneously. Each platform gets its own TinyFish call. Use `--sync` on every call. URL-encode the query.
 
 ### Reddit
 
@@ -101,67 +56,47 @@ tinyfish agent run --sync --url "https://www.producthunt.com/search?q=<query>" \
   "Extract comments and discussions about '<query>' as a JSON array. For each entry, capture: [{\"platform\": \"producthunt\", \"product_name\": \"product name\", \"content\": \"comment or description text\", \"upvotes\": \"number as string\", \"url\": \"product or comment url\", \"timestamp\": \"date if available\", \"sentiment\": \"positive|negative|neutral\"}]. Focus on user reviews, maker responses, and substantive comments. Return up to 30 results. Return ONLY the JSON array, no other text."
 ```
 
-### Retry Logic
+### Retry & Failure
 
-If any TinyFish call fails, retry it exactly once. If it fails again, skip that platform and continue with partial results. Never block the entire skill on a single platform failure.
+If a TinyFish call fails, retry it once. If it fails again, skip that platform and continue with partial results.
 
 ---
 
-## Step 2: Parse and Normalize Results
+## Step 2: Parse & Normalize Results
 
-After receiving raw output from TinyFish:
-
-1. **Extract JSON** from the `resultJson` field of the TinyFish response (the COMPLETE event)
-2. **Parse** the JSON array from each platform
-3. **Normalize text**: trim whitespace, remove excess newlines, clean encoding artifacts
-4. **Deduplicate**: remove entries with near-identical content (same core text across platforms)
-5. **Filter**: remove entries with empty content, spam patterns, or very short content (< 10 characters)
+1. Extract JSON from the `resultJson` field of the TinyFish COMPLETE event
+2. Parse each platform's JSON array
+3. Trim whitespace, remove excess newlines, clean encoding artifacts
+4. Deduplicate near-identical content across platforms
+5. Remove entries with empty content or fewer than 10 characters
 
 ---
 
 ## Step 3: Sentiment Classification
 
-For each entry, if TinyFish did not already classify sentiment, apply keyword-based classification:
+For each entry, read the content and classify sentiment from tone, intent, and context. Assign:
 
-### Keyword-Based Sentiment Rules
+- `"sentiment"`: one of `"positive"`, `"negative"`, or `"neutral"`
+- `"sentiment_score"`: a model-inferred float from `-1.0` (strongly negative) to `+1.0` (strongly positive), reflecting the strength and clarity of the sentiment
 
-**Positive indicators**: love, great, amazing, excellent, fantastic, best, awesome, helpful, impressive, recommend, easy, fast, reliable, solid, perfect, happy, pleased, smooth, intuitive, powerful
-
-**Negative indicators**: hate, terrible, awful, worst, broken, slow, buggy, crash, frustrating, expensive, disappointing, useless, complicated, unreliable, poor, annoying, painful, confusing, lacking, bad
-
-**Scoring**:
-- Count positive and negative keyword matches in each entry's content
-- If positive count > negative count: `"positive"` (score: `+0.5` to `+1.0` based on ratio)
-- If negative count > positive count: `"negative"` (score: `-0.5` to `-1.0` based on ratio)
-- If equal or no matches: `"neutral"` (score: `0.0`)
-
-This classification is intentionally simple and designed to be replaceable with an LLM or ML model later. The sentiment field and score field should always be present in the output.
+Every entry in the final output must include both fields.
 
 ---
 
-## Step 4: Aggregation
+## Step 4: Aggregation & Insight Synthesis
 
-Combine all platform results into the final output structure.
+Combine all platform results into the final output.
 
-### Insight Extraction
-
-From the combined data:
-
-- **pain_points**: Extract content from entries with negative sentiment. Summarize the top 5-10 recurring complaints or issues.
-- **positive_feedback**: Extract content from entries with positive sentiment. Summarize the top 5-10 recurring praises.
-- **trending_topics**: Extract the most frequently mentioned keywords/phrases across all entries (exclude common stop words). Return top 5-10 topics.
-
-### Overall Sentiment Calculation
-
-- Count positive, negative, and neutral entries across all platforms
-- Overall sentiment = whichever category has the most entries
-- If tied, default to `"neutral"`
+- **pain_points**: Summarize the top 5–10 recurring complaints or issues from negative entries.
+- **positive_feedback**: Summarize the top 5–10 recurring praises from positive entries.
+- **trending_topics**: Identify the 5–10 most frequently mentioned keywords or phrases across all entries (excluding stop words).
+- **overall_sentiment**: Determine by synthesizing tone, frequency, and strength across all entries — not by simple counting.
 
 ---
 
-## Output Format
+## Step 5: Final JSON Output
 
-Return ONLY this JSON structure. No markdown, no logs, no console output.
+Return ONLY this JSON structure. No markdown, no logs, no extra text.
 
 ```json
 {
@@ -232,95 +167,11 @@ Return ONLY this JSON structure. No markdown, no logs, no console output.
 
 ---
 
-## Implementation Reference
-
-When implementing this skill in TypeScript, use this code structure:
-
-### Core Utility
-
-```typescript
-async function runTinyFish(url: string, goal: string): Promise<any> {
-  // Execute: tinyfish agent run --sync --url "<url>" "<goal>"
-  // Parse the SSE output, find the COMPLETE event, extract resultJson
-  // On failure: retry once, then return null
-}
-```
-
-### Platform Scrapers
-
-```typescript
-async function scrapeReddit(query: string): Promise<SocialEntry[]> {
-  const url = `https://www.reddit.com/search/?q=${encodeURIComponent(query)}`;
-  const goal = `Extract relevant discussions about '${query}' as a JSON array...`;
-  const raw = await runTinyFish(url, goal);
-  return normalize(raw, "reddit");
-}
-
-async function scrapeTwitter(query: string): Promise<SocialEntry[]> {
-  const url = `https://twitter.com/search?q=${encodeURIComponent(query)}&src=typed_query`;
-  const goal = `Extract tweets about '${query}' as a JSON array...`;
-  const raw = await runTinyFish(url, goal);
-  return normalize(raw, "twitter");
-}
-
-async function scrapeProductHunt(query: string): Promise<SocialEntry[]> {
-  const url = `https://www.producthunt.com/search?q=${encodeURIComponent(query)}`;
-  const goal = `Extract comments about '${query}' as a JSON array...`;
-  const raw = await runTinyFish(url, goal);
-  return normalize(raw, "producthunt");
-}
-```
-
-### Aggregator
-
-```typescript
-async function aggregateResults(allData: SocialEntry[]): Promise<AggregatedOutput> {
-  // 1. Deduplicate entries
-  // 2. Apply sentiment classification where missing
-  // 3. Extract pain_points, positive_feedback, trending_topics
-  // 4. Calculate overall sentiment
-  // 5. Return structured output
-}
-```
-
-### Main Entry Point
-
-```typescript
-async function getSocialSignals(query: string): Promise<AggregatedOutput> {
-  // 1. Run all three scrapers in parallel
-  const [reddit, twitter, producthunt] = await Promise.allSettled([
-    scrapeReddit(query),
-    scrapeTwitter(query),
-    scrapeProductHunt(query),
-  ]);
-
-  // 2. Collect successful results, track failures
-  const allData: SocialEntry[] = [];
-  const failed: string[] = [];
-
-  if (reddit.status === "fulfilled" && reddit.value) allData.push(...reddit.value);
-  else failed.push("reddit");
-
-  if (twitter.status === "fulfilled" && twitter.value) allData.push(...twitter.value);
-  else failed.push("twitter");
-
-  if (producthunt.status === "fulfilled" && producthunt.value) allData.push(...producthunt.value);
-  else failed.push("producthunt");
-
-  // 3. Aggregate and return
-  return aggregateResults(allData, query, failed);
-}
-```
-
----
-
 ## Key Rules
 
-- **Parallel scraping**: Always run all three platform scrapes simultaneously, never sequentially.
-- **Separate TinyFish calls**: Never combine multiple platforms into one TinyFish call.
-- **Always use --sync**: Every TinyFish call must use the `--sync` flag.
-- **Graceful degradation**: If a platform fails, return partial results from the others.
-- **JSON only**: Final output must be valid JSON. No markdown wrapping, no console logs, no extra text.
-- **URL-encode the query**: Always encode the query parameter in URLs.
-- **Limit results**: Cap at 20-30 entries per platform to keep output manageable.
-- **Match user's language**: Respond in whatever language the user is writing in.
+- One TinyFish call per platform — never combine.
+- Always use `--sync`.
+- If a platform fails, return partial results from the others.
+- Return only valid JSON — no markdown, no logs.
+- Cap at 20–30 entries per platform.
+- Match the user's language.
